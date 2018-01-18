@@ -29,7 +29,6 @@ parser = argparse.ArgumentParser(description='''Plataforma de coleta de dados'''
                                  formatter_class=argparse.RawTextHelpFormatter)
 
 parser.add_argument("-v", "--verbose", action='store_true', dest='verbose', help="Verbose", default=False)
-parser.add_argument("-procdate", type=str, dest='procdate', help="Data de Processamento", default=None)
 parser.add_argument("-configure", type=str, dest='configure', help="Arquivo de configuração",
                     default='{base_dir}/heimdall/configure.json'.format(base_dir=BASE_DIR))
 args = parser.parse_args()
@@ -37,7 +36,7 @@ args = parser.parse_args()
 if __name__ == "__main__":
     print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] Inicio - {path}'.format(dt=datetime.now(), pid=os.getpid(), path=sys.argv[0]))
 
-    controller.run(configure=json.loads(open(args.configure).read()), procdate=args.procdate, verbose=args.verbose)
+    controller.run(configure=json.loads(open(args.configure).read()), verbose=args.verbose)
 
     print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] Fim - {path}'.format(dt=datetime.now(), pid=os.getpid(), path=sys.argv[0]))
     sys.exit(0)
