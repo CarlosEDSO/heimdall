@@ -11,12 +11,29 @@
 # [E] -> Erro
 
 import os
+import copy
+import multiprocessing
 from datetime import datetime
 
 from crawler import get_stations, get_data
 
 
-def run(configure, verbose=False) -> bool:
+def run(configure, parallel=False, processes_number=int(multiprocessing.cpu_count() / 2), verbose=False):
+    '''
+    
+    :param configure: 
+    :param verbose: 
+    :return: 
+    '''
+    if parallel:
+        pool = multiprocessing.Pool(processes=processes_number)
+        pool.map(run_task, configure)
+    else:
+        for task in configure:
+            run_task(configure=task, verbose=verbose)
+
+
+def run_task(configure, verbose=False) -> bool:
     '''
     
     :param configure: 
@@ -27,9 +44,7 @@ def run(configure, verbose=False) -> bool:
 
     result, stations = list(), list()
 
-    _url_station = 'https://www.cgesp.org/v3/estacoes-meteorologicas.jsp'
-    _url_data = 'https://www.saisp.br/geral/processo_cge.jsp?WHICHCHANNEL={station_id}'
-    stations = get_stations(url=_url_station, verbose=verbose)
+    stations = get_stations(configure=configure, verbose=verbose)
 
     if stations:
         for station in stations:
@@ -41,11 +56,13 @@ def run(configure, verbose=False) -> bool:
                         station_id=station['id'],
                         station_name=station['name']
                     ))
-                
-            _url = str(_url_data).format(station_id=station['id'])
+
+            _configure = copy.deepcopy(configure)
+            _configure['url_data'] = str(_configure['url_data']).format(station_id=station['id'])
+
             station_info = dict(station_id=station['id'], station_name=station['name'])
 
-            for index, row in enumerate(get_data(url=_url, verbose=verbose)):
+            for index, row in enumerate(get_data(configure=_configure, verbose=verbose)):
                 row.update(station_info)
                 result.append(row)
     else:
