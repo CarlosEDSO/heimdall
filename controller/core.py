@@ -13,31 +13,71 @@
 import os
 import copy
 import multiprocessing
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from dateutil.parser import parse
 
 from crawler import get_stations, get_data
 
 
-def run(configure, parallel=False, processes_number=int(multiprocessing.cpu_count() / 2), verbose=False):
+def run(boot_settings, processing_dates=None, parallel=False, processes_number=int(multiprocessing.cpu_count() / 2),
+        verbose=False):
     '''
     
-    :param configure: 
-    :param verbose: 
+    :param configure: dict
+    :param parallel: bool
+    :param processes_number: int 
+    :param verbose: bool
     :return: 
     '''
+
+    result = list()
+
+    # Pre Processamento
+    for it in range(len(boot_settings)):
+        boot_settings[it].update({'processing_dates': processing_dates})
+        boot_settings[it].update({'verbose': verbose})
+
+    # Processamento
     if parallel:
-        pool = multiprocessing.Pool(processes=processes_number)
-        pool.map(run_task, configure)
+        pool = multiprocessing.Pool(processes=int(processes_number))
+        result = pool.map(run_task, boot_settings)
     else:
-        for task in configure:
-            run_task(configure=task, verbose=verbose)
+        for configure in boot_settings:
+            result.append(run_task(configure=configure))
+
+    # Report
+    if verbose:
+        for _result, configure in zip(result, boot_settings):
+            print(
+                '[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run >> '
+                'Processed : {_result} | Configuration : {configure}'.format(
+                    dt=datetime.now(),
+                    pid=os.getpid(),
+                    _result=_result,
+                    configure=configure
+                )
+            )
 
 
-def run_task(configure, verbose=False) -> bool:
+def run_task(configure) -> bool:
     '''
     
+    :param configure: dict
+    :return: 
+    '''
+    verbose = configure['verbose']
+
+    if str(configure['data_type']).lower().replace(' ', '_') == 'weather_station_data':
+        return _run_task_weather_station(configure=configure, verbose=verbose)
+    elif str(configure['data_type']).lower().replace(' ', '_') == 'flooding_data':
+        return _run_task_flooding_data(configure=configure, verbose=verbose)
+
+
+def _run_task_weather_station(configure, verbose=False) -> bool:
+    '''
+
     :param configure: 
-    :param procdate: 
     :param verbose: 
     :return: 
     '''
@@ -66,10 +106,40 @@ def run_task(configure, verbose=False) -> bool:
                 row.update(station_info)
                 result.append(row)
     else:
-        print('[A.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run >> No stations found'.format(
+        print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run >> No stations found'.format(
             dt=datetime.now(),
             pid=os.getpid(),
         ))
+        return False
+
+    # Imprimindo os resultados
+    for index, row in enumerate(result):
+        print(index, row)
+
+    return True
+
+
+def _run_task_flooding_data(configure, verbose=False) -> bool:
+    '''
+
+    :param configure: 
+    :param verbose: 
+    :return: 
+    '''
+
+    result = list()
+
+    if configure['processing_dates']:
+        start, end = configure['processing_dates']
+        start, end = parse(start), parse(end)
+    else:
+        start, end = datetime.today() - timedelta(days=1), datetime.today()
+
+    configure['processing_dates'] = [start + timedelta(days=i) for i in range(0, abs((start - end).days - 1))]
+
+    result = get_data(configure, verbose=verbose)
+    if not result:
+        return False
 
     # Imprimindo os resultados
     for index, row in enumerate(result):

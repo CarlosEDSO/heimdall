@@ -13,10 +13,12 @@
 import os
 import ssl
 import re
+import copy
 from urllib.request import Request, urlopen
 import urllib.error
-from datetime import datetime, timedelta
+from datetime import datetime
 
+import requests
 from bs4 import BeautifulSoup
 
 
@@ -31,30 +33,34 @@ def load_data_pag(url, verbose=False):
         print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.load_data_pag >> URL @ {_url}'.format(
             dt=datetime.now(),
             pid=os.getpid(),
-            _url=url
+            _url=url if not isinstance(url, Request) else url.get_full_url()
         ))
 
     regex = re.compile(r'[\n\r\t]')
 
     try:
-        result = urlopen(url, context=ssl.SSLContext()).read().decode('utf8')
-    except urllib.error.HTTPError as e:
-        print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.load_data_pag >> Error @ {e}'.format(
-            dt=datetime.now(),
-            pid=os.getpid(),
-            e=e
-        ))
-        return BeautifulSoup("", 'html.parser')
+        result = requests.get(url)
+        return BeautifulSoup(result.text, 'html.parser')
+    except:
+        try:
+            result = urlopen(url, context=ssl.SSLContext()).read().decode('utf8')
+            return BeautifulSoup(regex.sub("", result), 'html.parser')
+        except urllib.error.HTTPError as e:
+            print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.load_data_pag >> Error @ {e}'.format(
+                dt=datetime.now(),
+                pid=os.getpid(),
+                e=e
+            ))
 
-    result = BeautifulSoup(regex.sub("", result), 'html.parser')
-    return result
+    return BeautifulSoup("", 'html.parser')
 
 
-def get_stations(configure, verbose=False):
+def get_stations(configure: dict, verbose=False):
     '''
     
-    :param verbose: bool 
-    :return: list
+    :param configure: dict
+    :param verbose: bool
+    :return: list 
     '''
 
     if str(configure['source_data']).lower() == 'cgesp':
@@ -68,10 +74,12 @@ def get_stations(configure, verbose=False):
     return list()
 
 
-def get_weather_station_data(configure, verbose=False):
+def get_weather_station_data(configure: dict, verbose=False):
     '''
     
-    :return: 
+    :param configure: dict 
+    :param verbose: bool
+    :return: list 
     '''
 
     if str(configure['source_data']).lower() == 'cgesp':
@@ -97,40 +105,55 @@ def get_data(configure, verbose=False):
     
     :param url: str
     :param verbose: bool 
-    :return: 
+    :return: list
     '''
 
-    if str(configure['data_type']).lower() == 'weather_station_data':
+    if str(configure['data_type']).lower().replace(' ', '_') == 'weather_station_data':
         return get_weather_station_data(configure=configure, verbose=verbose)
+    elif str(configure['data_type']).lower().replace(' ', '_') == 'flooding_data':
+        return get_flooding_data(configure=configure, verbose=verbose)
 
     return list()
 
 
-def alagamento(configure, verbose=False):
+def get_flooding_data(configure, verbose=False):
     '''
-    
-    :return: 
+    Alagamento
+    :return: list
     '''
 
-    # Alagamento
-    _url = 'https://www.cgesp.org/v3/alagamentos.jsp?dataBusca={idate}&enviaBusca=Buscar'
-    #
-    # for i in range(0, 3):
-    #     _idate = start_date + timedelta(days=i)
-    #     print(_idate)
-    #     response = requests.get(_url.format(idate=_idate.strftime('%d/%m/%Y'), safe=''))
-    #     _soup = BeautifulSoup(response.text, 'html.parser')
-    #     for bairro in _soup.find_all("table", class_="tb-pontos-de-alagamentos"):
-    #         sub = bairro.find("td", class_="bairro arial-bairros-alag linha-pontilhada").contents[0]
-    #         sub = re.sub('\\r+\\n+\\t+\\s+', '', sub)
-    #         print(f'\n{sub} :')
-    #         for _localizacoes in bairro.find_all("div", class_="ponto-de-alagamento"):
-    #             _localizacao = _localizacoes.find_all("li")
-    #
-    #             rua = str(_localizacao[2].contents[2]).strip()
-    #             reference = str(_localizacao[4].contents[2].replace('Referência: ', '')).strip()
-    #             sentido = _localizacao[4].contents[0].replace('Sentido: ', '')
-    #
-    #             hora = re.findall('\d{2}:\d{2}', _localizacao[2].contents[0])
-    #
-    #             print(rua, reference, sentido, hora)
+    if str(configure['source_data']).lower() == 'cgesp':
+        _data = list()
+        for procdate in configure['processing_dates']:
+            _url = copy.deepcopy(configure['url_data'])
+            _url = _url.format(procdate=procdate)
+            result = load_data_pag(url=_url, verbose=verbose)
+
+            # Buscando os bairros
+            for _bairro in result.find_all("table", class_="tb-pontos-de-alagamentos"):
+
+                bairro = _bairro.find("td", class_="bairro arial-bairros-alag linha-pontilhada").contents[0]
+
+                # Tirando os espaços do nome do bairro
+                bairro = re.sub('\\r+\\n+\\t+\\s+', '', bairro)
+
+                # Buscando os dados de alagamento
+                for _localizacoes in _bairro.find_all("div", class_="ponto-de-alagamento"):
+                    _localizacao = _localizacoes.find_all("li")
+
+                    rua = str(_localizacao[2].contents[2]).strip()
+                    referencia = str(_localizacao[4].contents[2].replace('Referência: ', '')).strip()
+                    sentido = _localizacao[4].contents[0].replace('Sentido: ', '')
+                    situacao = _localizacao[0].get('title').replace('Inativo ', '')
+
+                    adjust_hour = lambda item: procdate.replace(hour=int(item.split(':')[0]),
+                                                                minute=int(item.split(':')[1]))
+                    hora = re.findall('\d{2}:\d{2}', _localizacao[2].contents[0])
+                    hora = list(map(adjust_hour, hora))
+
+                    _data.append(dict(bairro=bairro, rua=rua, referencia=referencia, sentido=sentido,
+                                      hora_inicial=hora[0], hora_termino=hora[1], situacao=situacao))
+
+        return _data
+
+    return list()

@@ -4,5 +4,10 @@
     "source_data": "cgesp",
     "url_stations": "https://www.cgesp.org/v3/estacoes-meteorologicas.jsp",
     "url_data": "https://www.saisp.br/geral/processo_cge.jsp?WHICHCHANNEL={station_id}"
+  },
+  {
+    "data_type": "flooding_data",
+    "source_data": "cgesp",
+    "url_data": "https://www.cgesp.org/v3/alagamentos.jsp?dataBusca={procdate:%d}%2F{procdate:%m}%2F{procdate:%Y}&enviaBusca=Buscar"
   }
 ]
