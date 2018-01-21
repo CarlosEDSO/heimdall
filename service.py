@@ -26,15 +26,19 @@ import argparse
 import controller
 from heimdall.settings import BASE_DIR
 
-parser = argparse.ArgumentParser(description='''Plataforma de coleta de dados''',
+parser = argparse.ArgumentParser(description='''Coletor de dados publicos:
+Medições das estações meteorológicas no site da CGESP 
+Registros de alagamentos no site da CGESP
+https://www.cgesp.org/v3/
+    ''',
                                  formatter_class=argparse.RawTextHelpFormatter)
 
 parser.add_argument("-v", "--verbose", action='store_true', dest='verbose', help="Verbose", default=False)
 parser.add_argument("-configure", type=str, dest='configure', help="Arquivo de configuração",
                     default='{base_dir}/heimdall/configure.json'.format(base_dir=BASE_DIR))
 parser.add_argument("-dates", type=str, nargs=2, dest='dates',
-                    help="Data Inicial e Data Final da busca dos dados historicos\n "
-                         "(apenas para registros de alagamentos). \n"
+                    help="Data Inicial e Data Final da busca dos dados historicos\n"
+                         "(apenas para registros de alagamentos nesta versão)\n"
                          "Formatos sugerido para a data: YYYYMMDD YYYYMMDD\n"
                          "(AnoMêsDia)",
                     default=None)
@@ -43,7 +47,7 @@ parser.add_argument("-parallel", action='store_true', dest='parallel', help="Par
 processes_number = int(multiprocessing.cpu_count() / 2)
 parser.add_argument("-processes_number", type=int, dest='processes_number',
                     help="Numero de processos para o caso do parametro -parallel ser utilizado.\n"
-                         "Padrão: Metade do numero de processadores da maquina {0}".format(processes_number)
+                         "Padrão: Metade do numero de processadores da maquina ( {0} )".format(processes_number)
                     , default=processes_number)
 
 args = parser.parse_args()
