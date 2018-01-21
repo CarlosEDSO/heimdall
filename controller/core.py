@@ -113,10 +113,6 @@ def _run_task_weather_station(configure, verbose=False) -> bool:
         ))
         return False
 
-    import json
-    with open('weather_stations.json', 'w') as ws:
-        ws.write(json.dumps(result))
-
     if 'store_data' in configure.keys():
         store_data = configure['store_data']
         if 'database' in store_data.keys():
