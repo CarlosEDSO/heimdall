@@ -10,14 +10,15 @@
 # [A] -> Aviso/Alerta
 # [E] -> Erro
 
-import os
 import copy
 import multiprocessing
+import os
 from datetime import datetime, timedelta
 
 from dateutil.parser import parse
 
 from crawler import get_stations, get_data
+from datahub import insert_data
 
 
 def run(boot_settings, processing_dates=None, parallel=False, processes_number=int(multiprocessing.cpu_count() / 2),
@@ -112,9 +113,19 @@ def _run_task_weather_station(configure, verbose=False) -> bool:
         ))
         return False
 
+    import json
+    with open('weather_stations.json', 'w') as ws:
+        ws.write(json.dumps(result))
+
+    if 'store_data' in configure.keys():
+        store_data = configure['store_data']
+        if 'database' in store_data.keys():
+            insert_data(idataset=result, data_type='weather_station_data', name_database=store_data['database'],
+                        verbose=verbose)
+
     # Imprimindo os resultados
-    for index, row in enumerate(result):
-        print(index, row)
+    # for index, row in enumerate(result):
+    #     print(index, row)
 
     return True
 
@@ -141,8 +152,14 @@ def _run_task_flooding_data(configure, verbose=False) -> bool:
     if not result:
         return False
 
+    if 'store_data' in configure.keys():
+        store_data = configure['store_data']
+        if 'database' in store_data.keys():
+            insert_data(idataset=result, data_type='flooding_data', name_database=store_data['database'],
+                        verbose=verbose)
+
     # Imprimindo os resultados
-    for index, row in enumerate(result):
-        print(index, row)
+    # for index, row in enumerate(result):
+    #     print(index, row)
 
     return True

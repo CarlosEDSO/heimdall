@@ -3,11 +3,13 @@
     "data_type": "weather_station_data",
     "source_data": "cgesp",
     "url_stations": "https://www.cgesp.org/v3/estacoes-meteorologicas.jsp",
-    "url_data": "https://www.saisp.br/geral/processo_cge.jsp?WHICHCHANNEL={station_id}"
+    "url_data": "https://www.saisp.br/geral/processo_cge.jsp?WHICHCHANNEL={station_id}",
+    "store_data" : {"database": "master"}
   },
   {
     "data_type": "flooding_data",
     "source_data": "cgesp",
-    "url_data": "https://www.cgesp.org/v3/alagamentos.jsp?dataBusca={procdate:%d}%2F{procdate:%m}%2F{procdate:%Y}&enviaBusca=Buscar"
+    "url_data": "https://www.cgesp.org/v3/alagamentos.jsp?dataBusca={procdate:%d}%2F{procdate:%m}%2F{procdate:%Y}&enviaBusca=Buscar",
+    "store_data" : {"database": "master"}
   }
 ]

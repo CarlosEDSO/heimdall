@@ -10,16 +10,18 @@
 # [A] -> Aviso/Alerta
 # [E] -> Erro
 
-import os
-import ssl
-import re
 import copy
-from urllib.request import Request, urlopen
+import os
+import re
+import ssl
 import urllib.error
 from datetime import datetime
+from urllib.request import Request, urlopen
 
 import requests
 from bs4 import BeautifulSoup
+
+from heimdall.utils import adjust_lower_strip_underscore
 
 
 def load_data_pag(url, verbose=False):
@@ -63,7 +65,7 @@ def get_stations(configure: dict, verbose=False):
     :return: list 
     '''
 
-    if str(configure['source_data']).lower() == 'cgesp':
+    if adjust_lower_strip_underscore(configure['source_data']) == 'cgesp':
         get_id = lambda item: re.compile(r'[estacao.jsp?POSTO=]').sub('', item)
 
         result = load_data_pag(url=configure['url_stations'], verbose=verbose)
@@ -82,7 +84,7 @@ def get_weather_station_data(configure: dict, verbose=False):
     :return: list 
     '''
 
-    if str(configure['source_data']).lower() == 'cgesp':
+    if adjust_lower_strip_underscore(configure['source_data']) == 'cgesp':
         url = Request(url=configure['url_data'])
         # É necessario inserir uma "referencia" para que durante a requisição
         # o site entenda que você não acessou diretamente a URL, no caso 'http://www.saisp.br/'
@@ -108,9 +110,9 @@ def get_data(configure, verbose=False):
     :return: list
     '''
 
-    if str(configure['data_type']).lower().replace(' ', '_') == 'weather_station_data':
+    if adjust_lower_strip_underscore(configure['data_type']) == 'weather_station_data':
         return get_weather_station_data(configure=configure, verbose=verbose)
-    elif str(configure['data_type']).lower().replace(' ', '_') == 'flooding_data':
+    elif adjust_lower_strip_underscore(configure['data_type']) == 'flooding_data':
         return get_flooding_data(configure=configure, verbose=verbose)
 
     return list()
@@ -122,7 +124,7 @@ def get_flooding_data(configure, verbose=False):
     :return: list
     '''
 
-    if str(configure['source_data']).lower() == 'cgesp':
+    if adjust_lower_strip_underscore(configure['source_data']) == 'cgesp':
         _data = list()
         for procdate in configure['processing_dates']:
             _url = copy.deepcopy(configure['url_data'])
