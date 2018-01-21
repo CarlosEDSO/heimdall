@@ -11,7 +11,8 @@ DATABASES = {
         "database": "master",
         "host": "mongodb+srv://heimdall-alwtu.mongodb.net/",
         "port": 27017,
-        "user": "",
+        "username": "",
         "password": ""
     }
 }
+

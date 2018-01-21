@@ -13,14 +13,14 @@
 
 from pymongo import MongoClient
 
-from heimdall.settings import DATABASES
+from heimdall.settings import DATABASES, COMMIT_DATABASE
 from heimdall.utils import adjust_lower_strip_underscore
 
 
 def get_connection(info):
     if adjust_lower_strip_underscore(info['type']) == 'mongodb':
-        return MongoClient(info['host'], username='heimdall',
-                           password='Ddpr3iNDHy3z3vSw', ssl=True, authSource='admin')
+        return MongoClient(info['host'], username=info['username'],
+                           password=info['password'], ssl=True, authSource='admin')
 
     return None
 
@@ -28,12 +28,14 @@ def get_connection(info):
 def insert_data(idataset, data_type, name_database, verbose=False):
     '''
     
-    :param idataset: 
-    :param verbose: 
+    :param idataset: list
+    :param data_type: str
+    :param name_database: str 
+    :param verbose: bool
     :return: 
     '''
 
-    if name_database in DATABASES.keys():
+    if name_database in DATABASES.keys() and COMMIT_DATABASE:
         infodb = DATABASES[name_database]
         if adjust_lower_strip_underscore(infodb['type']) == 'mongodb':
             client = get_connection(info=infodb)
@@ -48,4 +50,6 @@ def insert_data(idataset, data_type, name_database, verbose=False):
             medicao.insert_many(idataset)
             client.close()
 
-    return True
+        return True
+
+    return False
