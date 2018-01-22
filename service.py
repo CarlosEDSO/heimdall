@@ -34,15 +34,15 @@ https://www.cgesp.org/v3/
                                  formatter_class=argparse.RawTextHelpFormatter)
 
 parser.add_argument("-v", "--verbose", action='store_true', dest='verbose', help="Verbose", default=False)
-parser.add_argument("-configure", type=str, dest='configure', help="Arquivo de configuração",
+parser.add_argument("--configure", type=str, dest='configure', help="Arquivo de configuração",
                     default='{base_dir}/heimdall/configure.json'.format(base_dir=BASE_DIR))
-parser.add_argument("-dates", type=str, nargs=2, dest='dates',
+parser.add_argument("--dates", type=str, nargs=2, dest='dates',
                     help="Data Inicial e Data Final da busca dos dados historicos\n"
                          "(apenas para registros de alagamentos nesta versão)\n"
                          "Formatos sugerido para a data: YYYYMMDD YYYYMMDD\n"
                          "(AnoMêsDia)",
                     default=None)
-parser.add_argument("-parallel", action='store_true', dest='parallel', help="Parallel", default=False)
+parser.add_argument("--parallel", action='store_true', dest='parallel', help="Parallel", default=False)
 
 processes_number = int(multiprocessing.cpu_count() / 2)
 parser.add_argument("-processes_number", type=int, dest='processes_number',

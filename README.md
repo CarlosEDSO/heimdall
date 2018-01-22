@@ -47,21 +47,21 @@ esta na raiz do projeto. Utilize o parâmetro -h ou --help para descobrir as op�
 
     (venv) $ python service.py --help 
 
-##### -configure
+##### --configure
 O parâmetro permite passar um arquivo de configuração que 
 define a rodada, porem se o parâmetro não for utilizado 
 sera usada a configuração padrão.
 
     (venv) $ python service.py -configure heimdall/configure.json
 
-##### -dates
+##### --dates
 Data Inicial e Data Final da busca dos dados históricos 
 (apenas para registros de alagamentos no momento).
 
     (venv) $ python service.py -dates YYYYMMDD YYYYMMDD
     (venv) $ python service.py -dates 20160101 20160106
 
-##### -parallel && -processes_number
+##### --parallel && -processes_number
 Data Inicial e Data Final da busca dos dados históricos 
 (apenas para registros de alagamentos no momento).
 
