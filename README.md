@@ -52,20 +52,20 @@ O parâmetro permite passar um arquivo de configuração que
 define a rodada, porem se o parâmetro não for utilizado 
 sera usada a configuração padrão.
 
-    (venv) $ python service.py -configure heimdall/configure.json
+    (venv) $ python service.py --configure heimdall/configure.json
 
 ##### --dates
 Data Inicial e Data Final da busca dos dados históricos 
 (apenas para registros de alagamentos no momento).
 
-    (venv) $ python service.py -dates YYYYMMDD YYYYMMDD
-    (venv) $ python service.py -dates 20160101 20160106
+    (venv) $ python service.py --dates YYYYMMDD YYYYMMDD
+    (venv) $ python service.py --dates 20160101 20160106
 
 ##### --parallel && -processes_number
 Data Inicial e Data Final da busca dos dados históricos 
 (apenas para registros de alagamentos no momento).
 
-    (venv) $ python service.py -parallel -processes_number 2
+    (venv) $ python service.py --parallel --processes_number 2
 
 
 
