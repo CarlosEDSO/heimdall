@@ -9,7 +9,7 @@ DATABASES = {
     "master": {
         "type": "mongodb",
         "database": "master",
-        "host": "mongodb+srv://heimdall-alwtu.mongodb.net/",
+        "host": "",
         "port": 27017,
         "username": "",
         "password": ""
