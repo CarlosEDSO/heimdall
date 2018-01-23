@@ -1,5 +1,6 @@
 [
   {
+    "process_type": "collect_data",
     "data_type": "weather_station_data",
     "source_data": "cgesp",
     "url_stations": "https://www.cgesp.org/v3/estacoes-meteorologicas.jsp",

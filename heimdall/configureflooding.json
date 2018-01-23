@@ -1,6 +1,7 @@
 [
 
   {
+    "process_type": "collect_data",
     "data_type": "flooding_data",
     "source_data": "cgesp",
     "url_data": "https://www.cgesp.org/v3/alagamentos.jsp?dataBusca={procdate:%d}%2F{procdate:%m}%2F{procdate:%Y}&enviaBusca=Buscar",

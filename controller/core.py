@@ -19,6 +19,7 @@ from dateutil.parser import parse
 
 from crawler import get_stations, get_data
 from datahub import insert_data
+from heimdall.utils import adjust_lower_strip_underscore as adjust_lsu
 
 
 def run(boot_settings, processing_dates=None, parallel=False, processes_number=int(multiprocessing.cpu_count() / 2),
@@ -67,12 +68,19 @@ def run_task(configure) -> bool:
     :param configure: dict
     :return: 
     '''
-    verbose = configure['verbose']
-
-    if str(configure['data_type']).lower().replace(' ', '_') == 'weather_station_data':
-        return _run_task_weather_station(configure=configure, verbose=verbose)
-    elif str(configure['data_type']).lower().replace(' ', '_') == 'flooding_data':
-        return _run_task_flooding_data(configure=configure, verbose=verbose)
+    try:
+        if adjust_lsu(configure['process_type']) == 'collect_data':
+            if adjust_lsu(configure['data_type']) == 'weather_station_data':
+                return _run_task_weather_station(configure=configure, verbose=configure['verbose'])
+            elif adjust_lsu(configure['data_type']) == 'flooding_data':
+                return _run_task_flooding_data(configure=configure, verbose=configure['verbose'])
+    except Exception as e:
+        print(
+            '[E.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run_task >> Erro nas configurações @ {e}'.format(
+                dt=datetime.now(),
+                pid=os.getpid(),
+                e=e
+            ))
 
 
 def _run_task_weather_station(configure, verbose=False) -> bool:
@@ -119,12 +127,12 @@ def _run_task_weather_station(configure, verbose=False) -> bool:
             success = insert_data(idataset=result, data_type='weather_station_data',
                                   name_database=store_data['database'],
                                   verbose=verbose)
-        if success:
-            print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_weather_station >> '
-                  'Inserted into database'.format(
-                dt=datetime.now(),
-                pid=os.getpid(),
-            ))
+            if success:
+                print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_weather_station >> '
+                      'Inserted into database'.format(
+                    dt=datetime.now(),
+                    pid=os.getpid(),
+                ))
 
     return True
 
