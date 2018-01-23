@@ -10,7 +10,10 @@
 # [A] -> Aviso/Alerta
 # [E] -> Erro
 
+import os
+from datetime import datetime
 
+import pymongo.errors
 from pymongo import MongoClient
 
 from heimdall.settings import DATABASES, COMMIT_DATABASE
@@ -19,8 +22,21 @@ from heimdall.utils import adjust_lower_strip_underscore
 
 def get_connection(info):
     if adjust_lower_strip_underscore(info['type']) == 'mongodb':
-        return MongoClient(info['host'], username=info['username'],
-                           password=info['password'], ssl=True, authSource='admin')
+        try:
+            return MongoClient(info['host'], username=info['username'],
+                               password=info['password'], ssl=True, authSource='admin')
+        except pymongo.errors.ConfigurationError as e:
+            print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] data_hub.get_connection >> Verify host and port @ {e}'.format(
+                dt=datetime.now(),
+                pid=os.getpid(),
+                e=e
+            ))
+        except Exception as e:
+            print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] data_hub.get_connection >> Error @ {e}'.format(
+                dt=datetime.now(),
+                pid=os.getpid(),
+                e=e
+            ))
 
     return None
 
@@ -39,16 +55,17 @@ def insert_data(idataset, data_type, name_database, verbose=False):
         infodb = DATABASES[name_database]
         if adjust_lower_strip_underscore(infodb['type']) == 'mongodb':
             client = get_connection(info=infodb)
-            banco = client[infodb['database']]
-            if adjust_lower_strip_underscore(data_type) == 'weather_station_data':
-                medicao = banco['weather_data']
-            # Pode vir a abranger outros tipos de incidentes
-            elif adjust_lower_strip_underscore(data_type) in ['flooding_data']:
-                medicao = banco['incident']
-            else:
-                return False
-            medicao.insert_many(idataset)
-            client.close()
+            if client:
+                banco = client[infodb['database']]
+                if adjust_lower_strip_underscore(data_type) == 'weather_station_data':
+                    medicao = banco['weather_data']
+                # Pode vir a abranger outros tipos de incidentes
+                elif adjust_lower_strip_underscore(data_type) in ['flooding_data']:
+                    medicao = banco['incident']
+                else:
+                    return False
+                medicao.insert_many(idataset)
+                client.close()
 
         return True
 

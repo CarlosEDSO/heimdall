@@ -116,12 +116,15 @@ def _run_task_weather_station(configure, verbose=False) -> bool:
     if 'store_data' in configure.keys():
         store_data = configure['store_data']
         if 'database' in store_data.keys():
-            insert_data(idataset=result, data_type='weather_station_data', name_database=store_data['database'],
-                        verbose=verbose)
-
-    # Imprimindo os resultados
-    # for index, row in enumerate(result):
-    #     print(index, row)
+            success = insert_data(idataset=result, data_type='weather_station_data',
+                                  name_database=store_data['database'],
+                                  verbose=verbose)
+        if success:
+            print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_weather_station >> '
+                  'Inserted into database'.format(
+                dt=datetime.now(),
+                pid=os.getpid(),
+            ))
 
     return True
 
@@ -151,11 +154,13 @@ def _run_task_flooding_data(configure, verbose=False) -> bool:
     if 'store_data' in configure.keys():
         store_data = configure['store_data']
         if 'database' in store_data.keys():
-            insert_data(idataset=result, data_type='flooding_data', name_database=store_data['database'],
-                        verbose=verbose)
-
-    # Imprimindo os resultados
-    # for index, row in enumerate(result):
-    #     print(index, row)
+            success = insert_data(idataset=result, data_type='flooding_data', name_database=store_data['database'],
+                                  verbose=verbose)
+            if success:
+                print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_flooding_data >> '
+                      'Inserted into database '.format(
+                    dt=datetime.now(),
+                    pid=os.getpid(),
+                ))
 
     return True
