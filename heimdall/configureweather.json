@@ -1,0 +1,9 @@
+[
+  {
+    "data_type": "weather_station_data",
+    "source_data": "cgesp",
+    "url_stations": "https://www.cgesp.org/v3/estacoes-meteorologicas.jsp",
+    "url_data": "https://www.saisp.br/geral/processo_cge.jsp?WHICHCHANNEL={station_id}",
+    "store_data" : {"database": "master"}
+  }
+]
