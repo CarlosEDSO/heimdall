@@ -15,16 +15,16 @@ __version__ = '0.1'
 __email__ = 'carlos.oliveira226@gmail.com'
 __status__ = "Development"
 
-import sys
-import os
+import argparse
 import json
 import multiprocessing
+import os
+import sys
 from datetime import datetime
-
-import argparse
 
 import controller
 from heimdall.settings import BASE_DIR
+from heimdall.utils import adjust_lower_strip_underscore as adjust_lsu
 
 parser = argparse.ArgumentParser(description='''Coletor de dados publicos:
 Medições das estações meteorológicas no site da CGESP 
@@ -50,12 +50,23 @@ parser.add_argument("-processes_number", type=int, dest='processes_number',
                          "Padrão: Metade do numero de processadores da maquina ( {0} )".format(processes_number)
                     , default=processes_number)
 
+parser.add_argument("--export", type=str, dest='export',
+                    help="Informe o tipo dos dados para exportar em um arquivo csv, "
+                         "adicione um periodo com o paramentro --dates\n"
+                         "Utilizando esse parâmetro o arquivo informado no parâmetro --configure sera ignorado!",
+                    default=None)
+
 args = parser.parse_args()
 
 if __name__ == "__main__":
     print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] Inicio - {path}'.format(dt=datetime.now(), pid=os.getpid(), path=sys.argv[0]))
 
-    controller.run(boot_settings=json.loads(open(args.configure).read()), processing_dates=args.dates,
+    if args.export:
+        boot_settings = [{'process_type': 'export_data', 'data_type': adjust_lsu(args.export)}]
+    else:
+        boot_settings = json.loads(open(args.configure).read())
+
+    controller.run(boot_settings=boot_settings, processing_dates=args.dates,
                    parallel=args.parallel, processes_number=args.processes_number, verbose=args.verbose)
 
     print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] Fim - {path}'.format(dt=datetime.now(), pid=os.getpid(), path=sys.argv[0]))

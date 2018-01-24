@@ -18,7 +18,8 @@ from datetime import datetime, timedelta
 from dateutil.parser import parse
 
 from crawler import get_stations, get_data
-from datahub import insert_data
+from datahub import insert_data, export_data
+from heimdall.settings import DEFAULT_OUTPUT_PATH
 from heimdall.utils import adjust_lower_strip_underscore as adjust_lsu
 
 
@@ -32,6 +33,9 @@ def run(boot_settings, processing_dates=None, parallel=False, processes_number=i
     :param verbose: bool
     :return: 
     '''
+
+    if not os.path.exists(DEFAULT_OUTPUT_PATH):
+        os.makedirs(DEFAULT_OUTPUT_PATH)
 
     result = list()
 
@@ -74,6 +78,9 @@ def run_task(configure) -> bool:
                 return _run_task_weather_station(configure=configure, verbose=configure['verbose'])
             elif adjust_lsu(configure['data_type']) == 'flooding_data':
                 return _run_task_flooding_data(configure=configure, verbose=configure['verbose'])
+        elif adjust_lsu(configure['process_type'] == 'export_data'):
+            return _run_task_export_data(configure=configure, verbose=configure['verbose'])
+
     except Exception as e:
         print(
             '[E.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run_task >> Erro nas configurações @ {e}'.format(
@@ -81,6 +88,24 @@ def run_task(configure) -> bool:
                 pid=os.getpid(),
                 e=e
             ))
+
+
+def _run_task_export_data(configure, verbose=False) -> bool:
+    '''
+    
+    :param configure: dict 
+    :param verbose: bool
+    :return: bool
+    '''
+
+    if configure['processing_dates']:
+        start, end = configure['processing_dates']
+        start, end = parse(start), parse(end)
+    else:
+        start, end = datetime.today() - timedelta(days=1), datetime.today()
+        start, end = start.replace(hour=0, minute=0), end.replace(hour=23, minute=59)
+
+    export_data(data_type=configure['data_type'], start_date=start, end_date=end, verbose=verbose)
 
 
 def _run_task_weather_station(configure, verbose=False) -> bool:
@@ -123,9 +148,8 @@ def _run_task_weather_station(configure, verbose=False) -> bool:
 
     if 'store_data' in configure.keys():
         store_data = configure['store_data']
-        if 'database' in store_data.keys():
+        if 'database' in store_data:
             success = insert_data(idataset=result, data_type='weather_station_data',
-                                  name_database=store_data['database'],
                                   verbose=verbose)
             if success:
                 print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_weather_station >> '
@@ -161,9 +185,8 @@ def _run_task_flooding_data(configure, verbose=False) -> bool:
 
     if 'store_data' in configure.keys():
         store_data = configure['store_data']
-        if 'database' in store_data.keys():
-            success = insert_data(idataset=result, data_type='flooding_data', name_database=store_data['database'],
-                                  verbose=verbose)
+        if 'database' in store_data:
+            success = insert_data(idataset=result, data_type='flooding_data', verbose=verbose)
             if success:
                 print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_flooding_data >> '
                       'Inserted into database '.format(

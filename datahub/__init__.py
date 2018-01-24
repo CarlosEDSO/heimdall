@@ -1,1 +1,1 @@
-from .core import insert_data
+from .core import insert_data, export_data

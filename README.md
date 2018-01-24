@@ -1,7 +1,7 @@
 # Heimdall 
     Coletor de dados publicos:
     Medições das estações meteorológicas no site da CGESP 
-    Registros de alagamentos no site da CGESP
+    Registros de alagamentos no site da CGESP 
     https://www.cgesp.org/v3/
 
 ```
@@ -67,6 +67,17 @@ Data Inicial e Data Final da busca dos dados históricos
 
     (venv) $ python service.py --parallel --processes_number 2
 
+##### --export
+Informe o tipo dos dados para exportar em um arquivo csv, 
+adicione um periodo com o paramentro --dates
+
+* Tipo de dados: 
+    + flooding_data (Registros de alagamentos)
+    + weather_station_data (Dados das estações meteorológicas)
+
+Utilizando esse parâmetro o arquivo informado no parâmetro --configure sera ignorado!
+
+    (venv) $ python service.py --export flooding_data --dates 20160101 20160106
 
 
 [Anaconda]: <https://anaconda.org/anaconda/python>

@@ -4,3 +4,4 @@ dnspython==1.14.*
 argparse==1.4.*
 python-dateutil==2.6.*
 requests==2.14.*
+pandas==0.22.*
