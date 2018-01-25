@@ -20,6 +20,7 @@ from urllib.request import Request, urlopen
 
 import requests
 from bs4 import BeautifulSoup
+from dateutil.parser import parse
 
 from heimdall.utils import adjust_lower_strip_underscore
 
@@ -102,12 +103,21 @@ def get_weather_station_data(configure: dict, verbose=False):
             result = result.find_all('tr')
 
             result = [item.find('td').get_text() for item in result]
-            split_size = 7
-            keys = ['data_medicao', 'precipitacao', 'velocidade_vento', 'direcao_vento', 'temperatura',
-                    'umidade_relativa',
-                    'pressao']
+            split_size = int(len(result) / 25)
 
-            return [dict(zip(keys, result[i:i + split_size])) for i in range(0, len(result), split_size)]
+            if split_size == 7:
+                keys = ['data_medicao', 'precipitacao', 'velocidade_vento', 'direcao_vento', 'temperatura',
+                        'umidade_relativa',
+                        'pressao']
+            elif split_size == 5:
+                keys = ['data_medicao', 'precipitacao', 'temperatura', 'umidade_relativa', 'pressao']
+
+            result = [dict(zip(keys, result[i:i + split_size])) for i in range(0, len(result), split_size)]
+
+            for index, value in enumerate(result):
+                result[index]['data_medicao'] = parse(result[index]['data_medicao'])
+
+            return result
         except Exception as e:
             print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.get_weather_station_data >> '
                   'Error in searching the CGESP data @ {e}'.format(
