@@ -84,6 +84,12 @@ Utilizando esse parâmetro o arquivo informado no parâmetro --configure sera ig
     (venv) $ python service.py --export flooding_data --dates 20160101 20160106
 
 
+### Tag das Mensagens:
+    [I] -> Informacao
+    [A] -> Aviso/Alerta
+    [E] -> Erro
+
+
 [Anaconda]: <https://anaconda.org/anaconda/python>
 [Virtualenv]: <https://pypi.python.org/pypi/virtualenv>
 [Argparse]: <https://docs.python.org/2/howto/argparse.html>
