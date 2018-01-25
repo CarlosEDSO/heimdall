@@ -128,7 +128,9 @@ def write_csv(file_name, idataset, verbose=False):
 
     try:
         idataset = pandas.DataFrame(list(idataset))
-        del idataset['_id']
+        if '_id' in list(idataset):
+            del idataset['_id']
+
         idataset.to_csv(file_name, index=False)
         print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] datahub.write_csv >> '
               '{f} '.format(
