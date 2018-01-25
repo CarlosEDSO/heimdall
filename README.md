@@ -45,7 +45,11 @@ Recomendo utilizar o [Anaconda] mas pode ser outra ferramenta para criar seu amb
 O *service* e responsável por entregar as funcionalidades desenvolvidas, o arquivo
 esta na raiz do projeto. Utilize o parâmetro -h ou --help para descobrir as opções:
 
-    (venv) $ python service.py --help 
+    (venv) $ python service.py --help
+    
+##### Exemplos:
+    (venv) $ python service.py --configure heimdall/configureflooding.json --dates 20160101 20160106
+    (venv) $ python service.py --export flooding_data --dates 20160101 20160106
 
 ##### --configure
 O parâmetro permite passar um arquivo de configuração que 
