@@ -80,14 +80,12 @@ def run_task(configure) -> bool:
                 return _run_task_flooding_data(configure=configure, verbose=configure['verbose'])
         elif adjust_lsu(configure['process_type'] == 'export_data'):
             return _run_task_export_data(configure=configure, verbose=configure['verbose'])
-
     except Exception as e:
-        print(
-            '[E.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run_task >> Erro nas configurações @ {e}'.format(
-                dt=datetime.now(),
-                pid=os.getpid(),
-                e=e
-            ))
+        print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run_task >> Unexpected error @ {configure}'.format(
+            dt=datetime.now(),
+            pid=os.getpid(),
+            configure=configure
+        ))
 
 
 def _run_task_export_data(configure, verbose=False) -> bool:
@@ -140,23 +138,31 @@ def _run_task_weather_station(configure, verbose=False) -> bool:
                 row.update(station_info)
                 result.append(row)
     else:
-        print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run >> No stations found'.format(
+        print('[A.{dt:%Y%m%d%H%M}][PID.{pid}] controller.run >> No stations found'.format(
             dt=datetime.now(),
             pid=os.getpid(),
         ))
         return False
 
-    if 'store_data' in configure.keys():
-        store_data = configure['store_data']
-        if 'database' in store_data:
-            success = insert_data(idataset=result, data_type='weather_station_data',
-                                  verbose=verbose)
-            if success:
-                print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_weather_station >> '
-                      'Inserted into database'.format(
-                    dt=datetime.now(),
-                    pid=os.getpid(),
-                ))
+    if result:
+        if 'store_data' in configure.keys():
+            store_data = configure['store_data']
+            if 'database' in store_data:
+                success = insert_data(idataset=result, data_type='weather_station_data',
+                                      verbose=verbose)
+                if success:
+                    print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_weather_station >> '
+                          'Inserted into database'.format(
+                        dt=datetime.now(),
+                        pid=os.getpid(),
+                    ))
+    else:
+        print('[A.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_weather_station >> '
+              'No data found'.format(
+            dt=datetime.now(),
+            pid=os.getpid(),
+        ))
+        return False
 
     return True
 
@@ -180,18 +186,24 @@ def _run_task_flooding_data(configure, verbose=False) -> bool:
     configure['processing_dates'] = [start + timedelta(days=i) for i in range(0, abs((start - end).days - 1))]
 
     result = get_data(configure, verbose=verbose)
-    if not result:
-        return False
 
-    if 'store_data' in configure.keys():
-        store_data = configure['store_data']
-        if 'database' in store_data:
-            success = insert_data(idataset=result, data_type='flooding_data', verbose=verbose)
-            if success:
-                print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_flooding_data >> '
-                      'Inserted into database '.format(
-                    dt=datetime.now(),
-                    pid=os.getpid(),
-                ))
+    if result:
+        if 'store_data' in configure.keys():
+            store_data = configure['store_data']
+            if 'database' in store_data:
+                success = insert_data(idataset=result, data_type='flooding_data', verbose=verbose)
+                if success:
+                    print('[I.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_flooding_data >> '
+                          'Inserted into database '.format(
+                        dt=datetime.now(),
+                        pid=os.getpid(),
+                    ))
+    else:
+        print('[A.{dt:%Y%m%d%H%M}][PID.{pid}] controller._run_task_flooding_data >> '
+              'No data found '.format(
+            dt=datetime.now(),
+            pid=os.getpid(),
+        ))
+        return False
 
     return True
