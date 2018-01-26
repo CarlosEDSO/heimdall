@@ -66,8 +66,8 @@ Data Inicial e Data Final da busca dos dados históricos
     (venv) $ python service.py --dates 20160101 20160106
 
 ##### --parallel && -processes_number
-Data Inicial e Data Final da busca dos dados históricos 
-(apenas para registros de alagamentos no momento).
+Com --parallel e possivel rodar o processo em paralelo e com --processes_number o numero
+de processos que iram ser abertos
 
     (venv) $ python service.py --parallel --processes_number 2
 
