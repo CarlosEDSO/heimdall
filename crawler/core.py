@@ -94,36 +94,57 @@ def get_weather_station_data(configure: dict, verbose=False):
     '''
 
     if adjust_lower_strip_underscore(configure['source_data']) == 'cgesp':
-        try:
-            url = Request(url=configure['url_data'])
-            # É necessario inserir uma "referencia" para que durante a requisição
-            # o site entenda que você não acessou diretamente a URL, no caso 'http://www.saisp.br/'
-            url.add_header('REFERER', 'http://www.saisp.br/')
-            result = load_data_pag(url=url, verbose=verbose).find(id='tbTelemBody')
-            result = result.find_all('tr')
+        # try:
+        url = Request(url=configure['url_data'])
+        # É necessario inserir uma "referencia" para que durante a requisição
+        # o site entenda que você não acessou diretamente a URL, no caso 'http://www.saisp.br/'
+        url.add_header('REFERER', 'http://www.saisp.br/')
+        result = load_data_pag(url=url, verbose=verbose).find(id='tbTelemBody')
+        result = result.find_all('tr')
 
+        if result:
             result = [item.find('td').get_text() for item in result]
             split_size = int(len(result) / 25)
 
-            if split_size == 7:
+            if split_size == 8:
+                keys = ['data_medicao', 'precipitacao', 'velocidade_vento', 'direcao_vento', 'temperatura',
+                        'umidade_relativa', 'pressao', 'sensacao_termica']
+            elif split_size == 7:
                 keys = ['data_medicao', 'precipitacao', 'velocidade_vento', 'direcao_vento', 'temperatura',
                         'umidade_relativa',
                         'pressao']
             elif split_size == 5:
                 keys = ['data_medicao', 'precipitacao', 'temperatura', 'umidade_relativa', 'pressao']
+            else:
+                print('[A.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.get_weather_station_data >> '
+                      'Could not read table @ {url}'.format(
+                    dt=datetime.now(),
+                    pid=os.getpid(),
+                    url=configure['url_data']
+                ))
+                return list()
 
-            result = [dict(zip(keys, result[i:i + split_size])) for i in range(0, len(result), split_size)]
+            try:
+                result = [dict(zip(keys, result[i:i + split_size])) for i in range(0, len(result), split_size)]
+            except Exception as e:
+                print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.get_weather_station_data >> '
+                      'Unexpected error @ {url} @ {e}'.format(
+                    dt=datetime.now(),
+                    pid=os.getpid(),
+                    e=e,
+                    url=configure['url_data']
+                ))
 
             for index, value in enumerate(result):
                 result[index]['data_medicao'] = parse(result[index]['data_medicao'])
 
             return result
-        except Exception as e:
-            print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.get_weather_station_data >> '
-                  'Error in searching the CGESP data @ {e}'.format(
+        else:
+            print('[A.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.get_weather_station_data >> '
+                  'No data found @ {url}'.format(
                 dt=datetime.now(),
                 pid=os.getpid(),
-                e=e
+                url=configure['url_data']
             ))
 
     return list()
