@@ -68,7 +68,7 @@ def insert_data(idataset, data_type, verbose=False):
                 medicao.insert_many(idataset)
                 client.close()
 
-        return True
+                return True
 
     return False
 
