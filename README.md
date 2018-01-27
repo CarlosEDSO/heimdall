@@ -27,10 +27,15 @@ Clone o projeto em sua maquina
 ##### Crie um ambiente virtual para instalar as bibliotecas e executar o codigo
 Recomendo utilizar o [Anaconda] mas pode ser outra ferramenta para criar seu ambiente virtual
 
+
     $ wget -c  http://repo.continuum.io/archive/Anaconda3-5.0.1-Linux-x86_64.sh
     $ bash Anaconda3-5.0.1-Linux-x86_64.sh
     $ source .bashrc
     $ conda create --name venv python==3.6.*
+
+OBS: Usuario de MAC instale md5sum
+    
+    $ brew install md5sha1sum
 
 
 ##### Ative o ambiente virtual e instale as bibliotecas do projeto
