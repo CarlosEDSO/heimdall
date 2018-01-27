@@ -46,7 +46,7 @@ def load_data_pag(url, verbose=False):
         return BeautifulSoup(result.text, 'html.parser')
     except:
         try:
-            result = urlopen(url, context=ssl.SSLContext()).read().decode('utf8')
+            result = urlopen(url).read().decode('utf8')
             return BeautifulSoup(regex.sub("", result), 'html.parser')
         except urllib.error.HTTPError as e:
             print('[E.{dt:%Y%m%d%H%M}][PID.{pid}] crawler.load_data_pag >> Error @ {e}'.format(
